@@ -1,5 +1,4 @@
 from conans import ConanFile, CMake, tools
-import os
 
 class NngppConan(ConanFile):
     name = "nngpp"
@@ -11,8 +10,9 @@ class NngppConan(ConanFile):
     requires = [ "nng/1.3.2" ]
 
     def source(self):
-        self.run("git clone https://github.com/cwzx/nngpp.git")
+        file_name = "nng-v" + self.version + ".tar.gz"
+        tools.get("https://github.com/cwzx/nngpp/archive/" + file_name)
 
     def package(self):
-        print(os.getcwd())
-        self.copy("*", dst="include/nngpp", src="nngpp/include/nngpp")
+        folder_name = "nngpp-nng-v" + self.version
+        self.copy("*", dst="include/nngpp", src=folder_name + "/include/nngpp")
