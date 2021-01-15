@@ -1,0 +1,48 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - devel
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        include:
+          - os: windows-latest
+            python_exe: python
+            scripts_dir: Scripts
+          - os: ubuntu-latest
+            python_exe: python3
+            scripts_dir: bin
+          - os: macos-latest
+            python_exe: python3
+            scripts_dir: bin
+        
+    runs-on: ${{matrix.os}}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install conan
+        working-directory: ${{runner.workspace}}
+        shell: bash
+        run: |
+          ${{matrix.python_exe}} -m venv ./conan_venv
+          source ./conan_venv/${{matrix.scripts_dir}}/activate
+          pip install conan
+      - name: Create conan package
+        working-directory: ${{runner.workspace}}
+        shell: bash
+        run: |
+          source ./conan_venv/${{matrix.scripts_dir}}/activate
+          conan remote add petiaccja_public https://api.bintray.com/conan/petiaccja/public-conan
+          conan user -p ${{ secrets.CONAN_BINTRAY_API_KEY }} -r petiaccja_public petiaccja
+          conan create $GITHUB_WORKSPACE
