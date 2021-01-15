@@ -25,15 +25,19 @@ jobs:
           draft: false
           prerelease: false
       - name: Install conan
-        shell: bash
-        run: |
-          pip3 install --user conan
-      - name: Deploy to conan
         working-directory: ${{runner.workspace}}
         shell: bash
         run: |
+          python3 -m venv ./conan_venv
+          source ./conan_venv/bin/activate
+          pip install conan
+      - name: Create conan package
+        working-directory: ${{runner.workspace}}
+        shell: bash
+        run: |
+          source ./conan_venv/bin/activate
           echo nngpp/${GITHUB_REF:11}@
-          ~/.local/bin/conan remote add petiaccja_public https://api.bintray.com/conan/petiaccja/public-conan
-          ~/.local/bin/conan user -p ${{ secrets.CONAN_BINTRAY_API_KEY }} -r petiaccja_public petiaccja
-          ~/.local/bin/conan create $GITHUB_WORKSPACE nngpp/${GITHUB_REF:11}@
-          ~/.local/bin/conan upload nngpp/${GITHUB_REF:11} --all --confirm -r petiaccja_public
+          conan remote add petiaccja_public https://api.bintray.com/conan/petiaccja/public-conan
+          conan user -p ${{ secrets.CONAN_BINTRAY_API_KEY }} -r petiaccja_public petiaccja
+          conan create $GITHUB_WORKSPACE nngpp/${GITHUB_REF:11}@
+          conan upload nngpp/${GITHUB_REF:11} --all --confirm -r petiaccja_public
